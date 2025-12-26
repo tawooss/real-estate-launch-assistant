@@ -54,9 +54,8 @@ VITE_APP_ID=your_app_id
 OAUTH_SERVER_URL=https://api.manus.im
 VITE_OAUTH_PORTAL_URL=https://manus.im/oauth
 
-# Optional: Gemini API key (for external API testing)
-GEMINI_API_KEY=your_gemini_key_here
-GEMINI_MODEL=gemini-2.0-flash-lite
+# Note: Manus LLM is used for AI analysis (no additional API key needed)
+# The application uses the Manus platform's built-in LLM service
 ```
 
 ## Step 4: Set Up Database
@@ -295,11 +294,9 @@ git push origin feature/your-feature-name
 ## Environment Variables Reference
 
 | Variable | Purpose | Example |
-|----------|---------|---------|
+|----------|---------|----------|
 | `DATABASE_URL` | Database connection string | `mysql://user:pass@localhost:3306/db` |
 | `JWT_SECRET` | Session signing key | `your-secret-key-min-32-chars` |
-| `GEMINI_API_KEY` | External Gemini API key | `AIza...` |
-| `GEMINI_MODEL` | Gemini model version | `gemini-2.0-flash-lite` |
 | `VITE_APP_ID` | Manus OAuth app ID | `your-app-id` |
 
 ---
