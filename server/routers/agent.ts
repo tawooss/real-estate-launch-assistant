@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { router, protectedProcedure } from "../_core/trpc";
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { invokeLLM } from "../_core/llm";
 import { getRagService } from "../services/rag";
 import {
   createPropertyAnalysis,
@@ -11,8 +11,6 @@ import {
   getConversationWithMessages,
   getUserConversations,
 } from "../db.crud";
-
-const genai = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 
 // Input schema for property analysis
 const PropertyInputSchema = z.object({
@@ -130,21 +128,31 @@ Based on the property details and the retrieved market knowledge, provide a comp
 
 Provide ONLY valid JSON, no markdown or extra text.`;
 
-        // Call Gemini API with gemini-2.0-flash-lite
-        const model = genai.getGenerativeModel({
-          model: process.env.GEMINI_MODEL || "gemini-2.0-flash-lite",
+        // Call Manus LLM API
+        const response = await invokeLLM({
+          messages: [
+            {
+              role: "system",
+              content:
+                "You are a Real Estate Rental Pricing Launch Assistant for the Egyptian market. Provide analysis in valid JSON format only.",
+            },
+            { role: "user", content: agentPrompt },
+          ],
         });
 
-        const response = await model.generateContent(agentPrompt);
-        const responseText = response.response.text().trim();
+        const responseText = response.choices[0]?.message.content || "";
 
         // Parse JSON response
         let agentData;
         try {
-          agentData = JSON.parse(responseText);
+          agentData = JSON.parse(
+            typeof responseText === "string" ? responseText : JSON.stringify(responseText)
+          );
         } catch {
           // If response contains markdown code blocks, extract JSON
-          const jsonMatch = responseText.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+          const jsonMatch = (typeof responseText === "string" ? responseText : JSON.stringify(responseText)).match(
+            /```(?:json)?\s*([\s\S]*?)\s*```/
+          );
           if (jsonMatch) {
             agentData = JSON.parse(jsonMatch[1]);
           } else {
